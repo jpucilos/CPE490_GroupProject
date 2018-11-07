@@ -1,6 +1,4 @@
-# CPE 490 Project - Network Programming
-
-This project is for the 
+# CPE 490 Project - Network Programming 
 
 
 ## Members
@@ -10,10 +8,10 @@ Aldin Llolla - Accounting
 Joseph Puciloski - Software Developer
 David Lehman - Human Resources
 
-##Tools Used
-Pyhton 3
+## Tools Used
+Python 3.6
 
-##Sub-teams
+## Sub-teams
 Daniel and Brereton - Server Programming
 Joseph and Aldin - Client Programming
 David Lehman - Auxillary functions programming
