@@ -11,7 +11,7 @@ try:
 
     while True:
         message = input("Enter Message, or type 'q' to Quit:")
-        if (message == 'q'): break
+        if (message == "quit"): break
         else:
             s.sendall(message.encode('utf-8'))
 finally:
