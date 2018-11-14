@@ -25,11 +25,11 @@ def send(event=None):  # event is passed by binders.
 
 def on_closing(event=None):
     """This function is to be called when the window is closed."""
-    my_msg.set("{quit}")
+    my_msg.set("quit")
     send()
 
 top = tkinter.Tk()
-top.title("Chatter")
+top.title("Work In Progress")
 
 messages_frame = tkinter.Frame(top)
 my_msg = tkinter.StringVar()  # For the messages to be sent.
