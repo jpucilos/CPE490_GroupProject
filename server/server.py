@@ -1,61 +1,65 @@
-import socket
+"""Server for multithreaded (asynchronous) chat application."""
+from socket import AF_INET, socket, SOCK_STREAM
+from threading import Thread
 import sys
-import threading
 
-#TO be replaced with Data from MongoDB possibly?
+def accept_incoming_connections():
+    """Sets up handling for incoming clients."""
+    while True:
+        client, client_address = SERVER.accept()
+        print("%s:%s has connected." % client_address)
+        client.send(bytes("Greetings from the cave! Now type your name and press enter!", "utf8"))
+        addresses[client] = client_address
+        Thread(target=handle_client, args=(client,)).start()
+
+
+def handle_client(client):  # Takes client socket as argument.
+    """Handles a single client connection."""
+
+    name = client.recv(BUFSIZ).decode("utf8")
+    welcome = 'Welcome %s!' % name
+    client.send(bytes(welcome, "utf8"))
+    msg = "%s has joined the chat!" % name
+    print(msg)
+    broadcast(bytes(msg, "utf8"))
+    clients[client] = name
+
+    while True:
+        msg = client.recv(BUFSIZ)
+        if msg != bytes("{quit}", "utf8"):
+            broadcast(msg, name+": ")
+        else:
+            #client.send(bytes("{quit}", "utf8"))
+            client.close()
+            close_annoucement = name + " has left the chat."
+            print (close_annoucement)
+            del clients[client]
+            broadcast(bytes(close_annoucement, "utf8"))
+            break
+
+
+def broadcast(msg, prefix=""):  # prefix is for name identification.
+    """Broadcasts a message to all the clients."""
+
+    for sock in clients:
+        sock.send(bytes(prefix, "utf8")+msg)
+
+        
 clients = {}
 addresses = {}
 
-#Pass Argument in command line including the Public IP of the server
-server_address = (sys.argv[1], 10000)
-BUFFER_SIZE = 1024  # Normally 1024, but we want fast response
+BUFSIZ = 1024
+ADDR = (sys.argv[1], 10000)
+SERVER = socket(AF_INET, SOCK_STREAM)
+SERVER.bind(ADDR)
 
-#Create Socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(server_address)
-
-
-def listen_for_clients():
-	#Infinite loop that's always looking for new clients to enter the chatroom
-	while True:
-		conn, addr = s.accept()
-		print ("A new member has joined the room")
-		conn.send(bytes("Welcome to the room! Type your name and press enter!", "utf-8"))
-		addresses[conn] = addr
-		threading.Thread(target=handle_client, args= (conn,)).start()
-		
-def handle_client(conn):
-	#handles client after person joins
-	name = conn.recv(BUFFER_SIZE).decode("utf-8")
-	welcome = "Welcome " + name + ", if you want to quit, type 'quit' to exit"
-	conn.send(bytes(welcome, "utf-8"))
-	msg = name + " has joined the chat!"
-	broadcast(bytes(msg, "utf-8"))
-	clients[conn] = name
-	while True:
-		msg = conn.recv(BUFFER_SIZE).decode("utf-8")
-		if msg is not "quit":
-			broadcast(bytes(name + ": " + msg, "utf-8"))
-		else:
-			conn.close()
-			del clients[conn]
-			broadcast(bytes(name + " has left the room"))
-			break
-	return
-	
-
-def broadcast(message):
-	#Broadcast to group
-	for sock in clients:
-		sock.send(message)
-	return
-
-
-s.listen(5)
-print("Waiting Connection....")
-accept_thread = threading.Thread(target = listen_for_clients)
-accept_thread.start()
-accept_thread.join()
-
-#Server closes when both of the processes above close
-s.close()
+if __name__ == "__main__":
+    SERVER.listen(5)
+    print("Waiting for connection...")
+    ACCEPT_THREAD = Thread(target=accept_incoming_connections, daemon = True)
+    ACCEPT_THREAD.start()
+    ACCEPT_THREAD.join()
+    SERVER.close()
+    
+    
+    

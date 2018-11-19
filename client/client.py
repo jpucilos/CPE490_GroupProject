@@ -18,22 +18,24 @@ def send(event=None):  # event is passed by binders.
     msg = my_msg.get()
     my_msg.set("")  # Clears input field.
     client_socket.send(bytes(msg, "utf8"))
-    if msg == "quit":
+    if msg == "{quit}":
+        print("Closing Connection")
         client_socket.close()
-        top.quit()
+        top.destroy()
+        sys.exit()
 
 
 def on_closing(event=None):
     """This function is to be called when the window is closed."""
-    my_msg.set("quit")
+    my_msg.set("{quit}")
     send()
 
 top = tkinter.Tk()
-top.title("Work In Progress")
+top.title("Chatter")
 
 messages_frame = tkinter.Frame(top)
 my_msg = tkinter.StringVar()  # For the messages to be sent.
-my_msg.set("Type your messages here.")
+my_msg.set("")
 scrollbar = tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
 # Following will contain the messages.
 msg_list = tkinter.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
@@ -49,15 +51,11 @@ send_button = tkinter.Button(top, text="Send", command=send)
 send_button.pack()
 
 top.protocol("WM_DELETE_WINDOW", on_closing)
-
-
-
 BUFSIZ = 1024
 ADDR = (sys.argv[1], 10000)
 
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
-receive_thread = Thread(target=receive)
-receive_thread.start()
+receive_thread = Thread(target=receive, daemon = True).start()
 tkinter.mainloop()  # Starts GUI execution.
