@@ -9,6 +9,7 @@ def accept_incoming_connections():
         client, client_address = SERVER.accept()
         print("%s:%s has connected." % client_address)
         client.send(bytes("Greetings from the cave! Now type your name and press enter!\n", "utf8"))
+        client.send(bytes("Then, please type in a group name, use general for everyone\n", "utf8"))
         addresses[client] = client_address
         Thread(target=handle_client, args=(client,)).start()
 
@@ -17,17 +18,20 @@ def handle_client(client):  # Takes client socket as argument.
     """Handles a single client connection."""
 
     name = client.recv(BUFSIZ).decode("utf8")
-    welcome = 'Welcome %s!' % name
+    group = client.recv(BUFSIZ).decode("utf8")
+    welcome = 'Welcome %s!\n' % name
     client.send(bytes(welcome, "utf8"))
     msg = "%s has joined the chat!" % name
     print(msg)
     broadcast(bytes(msg, "utf8"))
     clients[client] = name
+    groups[client] = group
+    #print(groups)
 
     while True:
         msg = client.recv(BUFSIZ)
         if msg != bytes("{quit}", "utf8"):
-            broadcast(msg, name+": ")
+                cast(client, msg, name+": ")
         else:
             #client.send(bytes("{quit}", "utf8"))
             client.close()
@@ -38,15 +42,23 @@ def handle_client(client):  # Takes client socket as argument.
             break
 
 
-def broadcast(msg, prefix=""):  # prefix is for name identification.
-    """Broadcasts a message to all the clients."""
+def cast(sender, msg, prefix=""):  # prefix is for name identification.
+        if(groups[sender] == "general"):
+                broadcast(msg, prefix) #send to all
+        else:
+                for sock in groups:
+                        if(groups[sock] == groups[sender]): #find people in that group and send to them
+                                sock.send(bytes(prefix, "utf8")+msg+bytes("\n", "utf8"))
 
-    for sock in clients:
-        sock.send(bytes(prefix, "utf8")+msg+bytes("\n"))
+
+def broadcast(msg, prefix=""):
+        for sock in clients:
+                sock.send(bytes(prefix, "utf8")+msg+bytes("\n", "utf8"))
 
         
 clients = {}
 addresses = {}
+groups = {}
 
 BUFSIZ = 1024
 ADDR = (sys.argv[1], 10000)
