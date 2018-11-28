@@ -3,12 +3,14 @@ from threading import Thread
 import tkinter
 import sys
 
-def receive():
+def receive(event=None):
     """Handles receiving of messages."""
     while True:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
             msg_list.insert(tkinter.END, msg)
+            if msg:
+                client_socket.send(bytes("E394", "utf8")) #verification code
         except OSError:  # Possibly client has left the chat.
             break
 
