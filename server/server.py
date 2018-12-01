@@ -26,7 +26,7 @@ def handle_client(client):  # Takes client socket as argument.
                 broadcast(bytes(intro, "utf8"))
                 clients[client] = name
                 groups[client] = group
-                print(groups)
+                #print(groups)
                 break
 
     while True:
@@ -44,6 +44,7 @@ def handle_client(client):  # Takes client socket as argument.
                 close_annoucement = name + " has left the chat."
                 print (close_annoucement)
                 del clients[client]
+                del groups[client]
                 broadcast(bytes(close_annoucement, "utf8"))
                 break
 
