@@ -8,8 +8,7 @@ def accept_incoming_connections():
     while True:
         client, client_address = SERVER.accept()
         print("%s:%s has connected." % client_address)
-        client.send(bytes("Greetings from the cave! Now type your name and press enter!\n", "utf8"))
-        client.send(bytes("Then, please type in a group name, use general for everyone\n", "utf8"))
+        client.send(bytes("Greetings from the cave! Now type your name and press enter!\nThen, please type in a group name, use general for everyone\n", "utf8"))
         addresses[client] = client_address
         Thread(target=handle_client, args=(client,)).start()
 
